@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-semantic = ["sentence-transformers>=5.1,<6"]
+semantic = ["sentence-transformers>=6.3.0,<7"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
