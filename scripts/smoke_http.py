@@ -28,7 +28,8 @@ for attempt in range(30):
         if health["status"] != "ok" or health["corpus"]["articles"] != 75:
             raise ValueError("Invalid health response")
         break
-    except URLError:
+    # A published Docker port may reset connections before Uvicorn binds it.
+    except (URLError, ConnectionError, TimeoutError):
         if attempt == 29:
             raise
         time.sleep(1)
