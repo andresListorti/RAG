@@ -8,6 +8,10 @@ English · [Documentación en español](README.md)
 
 A portfolio project demonstrating practical RAG engineering: reproducible ingestion, measurable retrieval, tool orchestration, evidence-grounded generation and security controls. The application and legal responses are in Argentine Spanish. This document explains the project in English for reviewers and recruiters.
 
+![Consumidor RAG interface](docs/images/demo-desktop.png)
+
+**Real validation:** 24 Python tests, 12 desktop/mobile Chromium tests, automated axe audits with no violations, a real multilingual encoder and live Ollama model runs. See [validation evidence and limitations](docs/validation.md).
+
 > Educational demo, not legal advice. Act 24,240 is part of a broader legal framework. The corpus excludes case law, civil codes, regulations and provincial procedures. Always check the official source, current legislation and professional advice when needed.
 
 ## Quick start
@@ -45,7 +49,7 @@ Invoke-RestMethod http://127.0.0.1:8000/api/ask -Method Post -ContentType 'appli
 | Hybrid retrieval | BM25 + character TF-IDF by default; optional BM25 + multilingual neural embeddings |
 | Ranking | Reciprocal Rank Fusion, explicit article lookup and multi-query result fusion |
 | Agent workflow | Planner → search tool → bounded corrective retrieval → composition → citation validation |
-| Grounding | Retrieved document ID plus an exact quote; extractive fallback on errors |
+| Grounding | Allowlisted passage IDs resolved to verbatim source text; extractive fallback on errors |
 | Observability | Executed queries, step outcomes, evidence IDs, backend, latency and corpus version |
 | Evaluation | Versioned dataset, Hit@5, MRR@5, out-of-scope abstention and automated regression tests |
 | Security | No execution tools, no unrestricted browsing, environment-based secrets, resource limits and safe DOM output |
@@ -96,7 +100,7 @@ $env:EMBEDDING_MODEL='sentence-transformers/paraphrase-multilingual-MiniLM-L12-v
 
 Restart the server with that environment variable. The second ranking becomes cosine similarity over normalized multilingual embeddings; BM25 and RRF remain. The first startup downloads the model and may require several hundred MB. Remote model code is disabled with `trust_remote_code=False`. Review provenance and licensing before changing the model.
 
-The index stays in memory because this corpus contains only 75 blocks. Long articles can exceed the neural encoder's input window; BM25 still reads their full text. A larger corpus would benefit from subsection chunks, parent-article retrieval and index persistence. The published baseline does not measure this optional backend.
+Use `uv run --extra semantic` when running with embeddings to retain the optional dependency. Set `EMBEDDING_REVISION=e8f8c211226b894fcb81acc59f3b34ba3efd5f42`, the tested model revision. The encoder indexes **214 overlapping 96-token windows with a stride of 64**, then takes maximum child-window similarity per parent article. This avoids silently truncating articles to the encoder's 128-token limit. BM25 reads complete articles. The index stays in memory. Both backends have been executed and measured; see the validation report.
 
 ### LLM planning and generation
 
@@ -112,7 +116,23 @@ uv run uvicorn consumidor.api:app --app-dir src --host 127.0.0.1 --port 8000
 
 Use `export NAME=value` in bash. `.env.example` documents the variables; it is **not automatically loaded**. Never commit credentials. The browser never receives the API key. LLM mode sends the question and legal evidence to the configured provider and may incur costs. Do not enter personal information.
 
-Invalid plans, timeouts and nonexistent quotes trigger an extractive response with `fallback=true`. Citation validation establishes **textual provenance**, not logical entailment between a generated statement and its quote. Human review remains necessary. LLM behavior is tested with controlled test doubles; no paid provider was used to validate this release.
+The model selects a `quote_id` from an allowlisted passage catalog. The server resolves the original text instead of relying on model transcription. Invalid plans, timeouts and unknown IDs trigger an extractive response with `fallback=true`. This establishes **textual provenance**, not logical entailment or legal correctness. Human review remains necessary. This path was exercised with real Ollama inference and test doubles; no paid provider was used.
+
+### Local Ollama, without a paid key
+
+With Ollama running and `qwen3.5:2b` installed:
+
+```powershell
+$env:GENERATION_BACKEND='llm'
+$env:LLM_BASE_URL='http://127.0.0.1:11434/v1'
+$env:LLM_ALLOW_LOCAL_HTTP='1'
+$env:LLM_MODEL='qwen3.5:2b'
+$env:LLM_API_KEY='ollama'
+$env:LLM_REASONING_EFFORT='none'
+uv run uvicorn consumidor.api:app --app-dir src --host 127.0.0.1 --port 8000
+```
+
+`ollama` is a compatibility value, not a private credential. Plain HTTP requires explicit opt-in and literal loopback IPs (`127.0.0.1` or `::1`); remote providers require HTTPS. Add `--extra semantic` to `uv run` when combining with embeddings. Warm up the model before presenting: cold loading can exceed the 25-second timeout and activate fallback.
 
 ## Corpus provenance and refresh
 
@@ -144,19 +164,22 @@ uv run ruff format --check src tests
 PYTHONPATH=src uv run python -m consumidor.evaluate --output evals/latest.json
 uv run bandit -r src -q
 uv run pip-audit
+npm ci
+npx playwright install chromium
+npm run test:e2e
 ```
 
-On PowerShell, set `$env:PYTHONPATH='src'` before running the evaluator. Tests cover corpus integrity, article retrieval, verbatim citation checks, basic prompt injection, provider failures, HTTP validation and rate limiting. CI also builds the container on Linux.
+On PowerShell, set `$env:PYTHONPATH='src'` before running the evaluator. Tests cover corpus integrity, retrieval, allowlisted citation IDs, basic prompt injection, provider failures, HTTP validation and rate limiting. CI runs the container as a non-root user with a read-only filesystem and tests its real HTTP API, runs Chromium/axe and exercises the pinned multilingual encoder.
 
 Measured results are versioned in [evals/baseline.json](evals/baseline.json):
 
 | Metric | Result | Sample |
 |---|---:|---:|
 | Hit@5 | 1.0000 | 15 questions with an expected article |
-| MRR@5 | 0.7778 | The same 15 questions |
+| MRR@5 | 0.7889 | The same 15 questions |
 | Out-of-scope abstention | 1.0000 | 3 negative questions |
 
-This is a small, project-authored development regression set, **not an independent held-out benchmark or evidence of production-level legal accuracy**. Hit@5 measures whether an annotated article appears among the retrieved results; it does not assess completeness or explanation quality. Published results cover the lexical/extractive baseline, not a neural encoder or live LLM. Latency depends on hardware and excludes index startup.
+This is a small, project-authored development regression set, **not an independent held-out benchmark or evidence of production-level legal accuracy**. Hit@5 does not assess completeness or explanation quality. The additional 30-case challenge and live model results are documented in the [validation report](docs/validation.md). Latency depends on hardware and excludes index startup.
 
 ## Security and deployment
 

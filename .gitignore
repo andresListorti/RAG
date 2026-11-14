@@ -11,3 +11,6 @@ dist/
 coverage.xml
 .coverage
 data/raw/
+node_modules/
+playwright-report/
+test-results/

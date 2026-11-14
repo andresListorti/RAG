@@ -7,8 +7,8 @@ Demo local educativa. No almacena conversaciones ni requiere PII. El corpus es p
 | Amenaza | Control implementado | Límite conocido |
 |---|---|---|
 | Exposición de claves | Variables de entorno; `.env*` ignorados; clave solo backend | No protege un host comprometido; revisar commits antes de publicar |
-| Prompt injection | Herramientas cerradas: solo búsqueda; datos separados del prompt; citas verificadas | Un LLM puede redactar una afirmación incorrecta con una cita auténtica |
-| SSRF / exfiltración | El usuario no puede elegir URL; ingesta fija; proveedor definido por operador, HTTPS sin credenciales en URL | No usar una configuración de proveedor de origen no confiable |
+| Prompt injection | Solo búsqueda; datos separados del prompt; IDs de pasajes permitidos y texto original recuperado por servidor; prueba adversarial real acotada | Un LLM puede redactar una afirmación incorrecta con una cita auténtica; una prueba no cubre todos los ataques |
+| SSRF / exfiltración | El usuario no puede elegir URL; ingesta fija; proveedor definido por operador, HTTPS sin credenciales en URL; HTTP solo con opt-in e IP literal de loopback | No usar una configuración de proveedor de origen no confiable |
 | Redirección del proveedor | No se siguen redirecciones HTTP con Authorization | El proveedor configurado recibe consulta y contexto |
 | XSS | DOM con `textContent`; no render de HTML/Markdown del modelo; URLs de fuente fijas; CSP | CSP no reemplaza una revisión de frontend |
 | Abuso / costos | 1.500 caracteres; cuerpo máximo 8 KiB; 20 peticiones/minuto globales por proceso; 2 consultas concurrentes | Límites en memoria, no distribuidos; sin cuentas ni presupuesto diario |

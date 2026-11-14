@@ -1,0 +1,638 @@
+{
+  "backend": "bm25+neural:sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "corpus_sha256": "a6d27255d3adda9c7c2d72ad6574f005a579cabeb4cd6aa459bb62492fd03533",
+  "cases": 18,
+  "hit_at_5": 1.0,
+  "mrr_at_5": 0.8333,
+  "out_of_scope_abstention": 1.0,
+  "results": [
+    {
+      "question": "¿Qué garantía legal tiene un producto nuevo?",
+      "relevant": [
+        "11"
+      ],
+      "retrieved": [
+        "11",
+        "16",
+        "18",
+        "10 bis",
+        "14"
+      ],
+      "latency_ms": 31.0
+    },
+    {
+      "question": "¿Qué garantía tienen los bienes muebles usados?",
+      "relevant": [
+        "11"
+      ],
+      "retrieved": [
+        "11",
+        "10",
+        "16",
+        "9",
+        "34"
+      ],
+      "latency_ms": 45.3
+    },
+    {
+      "question": "¿Quién debe pagar el flete para llevar un producto al taller durante la garantía?",
+      "relevant": [
+        "11"
+      ],
+      "retrieved": [
+        "11",
+        "10",
+        "16",
+        "7",
+        "18"
+      ],
+      "latency_ms": 30.7
+    },
+    {
+      "question": "Compré por internet. ¿Puedo revocar la aceptación?",
+      "relevant": [
+        "34"
+      ],
+      "retrieved": [
+        "34",
+        "21",
+        "7",
+        "31",
+        "32"
+      ],
+      "latency_ms": 29.9
+    },
+    {
+      "question": "¿Qué obligaciones hay sobre información gratuita al consumidor?",
+      "relevant": [
+        "4"
+      ],
+      "retrieved": [
+        "4",
+        "8",
+        "61",
+        "7",
+        "56"
+      ],
+      "latency_ms": 30.3
+    },
+    {
+      "question": "¿La publicidad se incluye en el contrato?",
+      "relevant": [
+        "8"
+      ],
+      "retrieved": [
+        "8",
+        "38",
+        "7",
+        "37",
+        "4"
+      ],
+      "latency_ms": 31.9
+    },
+    {
+      "question": "¿Cómo se puede dar de baja un servicio contratado por teléfono?",
+      "relevant": [
+        "10 ter"
+      ],
+      "retrieved": [
+        "10 quáter",
+        "10 ter",
+        "30",
+        "22",
+        "33"
+      ],
+      "latency_ms": 32.3
+    },
+    {
+      "question": "¿Pueden cobrar preaviso al solicitar la baja de un servicio?",
+      "relevant": [
+        "10 quáter"
+      ],
+      "retrieved": [
+        "10 ter",
+        "10 quáter",
+        "30",
+        "23",
+        "33"
+      ],
+      "latency_ms": 35.2
+    },
+    {
+      "question": "¿Qué dice la ley sobre trato digno y prácticas abusivas?",
+      "relevant": [
+        "8 bis"
+      ],
+      "retrieved": [
+        "8 bis",
+        "40 bis",
+        "26",
+        "41",
+        "52"
+      ],
+      "latency_ms": 31.4
+    },
+    {
+      "question": "¿Qué sucede cuando una reparación no resulta satisfactoria?",
+      "relevant": [
+        "17"
+      ],
+      "retrieved": [
+        "15",
+        "17",
+        "54",
+        "11",
+        "16"
+      ],
+      "latency_ms": 49.2
+    },
+    {
+      "question": "¿Qué dice el artículo 52 bis sobre daño punitivo?",
+      "relevant": [
+        "52 bis"
+      ],
+      "retrieved": [
+        "52 bis",
+        "40 bis",
+        "8 bis",
+        "40",
+        "47"
+      ],
+      "latency_ms": 31.6
+    },
+    {
+      "question": "¿Qué establece el artículo 37 sobre cláusulas abusivas?",
+      "relevant": [
+        "37"
+      ],
+      "retrieved": [
+        "37",
+        "8 bis",
+        "40 bis",
+        "38",
+        "48"
+      ],
+      "latency_ms": 19.8
+    },
+    {
+      "question": "¿Quiénes responden solidariamente por la garantía legal?",
+      "relevant": [
+        "13"
+      ],
+      "retrieved": [
+        "18",
+        "13",
+        "11",
+        "52 bis",
+        "16"
+      ],
+      "latency_ms": 30.8
+    },
+    {
+      "question": "¿Cuándo prescriben las sanciones de esta ley?",
+      "relevant": [
+        "50"
+      ],
+      "retrieved": [
+        "50",
+        "49",
+        "46",
+        "47",
+        "7"
+      ],
+      "latency_ms": 17.4
+    },
+    {
+      "question": "¿Qué opciones hay ante el incumplimiento de una oferta?",
+      "relevant": [
+        "10 bis"
+      ],
+      "retrieved": [
+        "7",
+        "10 bis",
+        "8",
+        "58",
+        "4"
+      ],
+      "latency_ms": 30.7
+    },
+    {
+      "question": "¿Cómo calculo la órbita de Marte?",
+      "relevant": [],
+      "retrieved": [],
+      "latency_ms": 0.2
+    },
+    {
+      "question": "Escribí una receta de pizza",
+      "relevant": [],
+      "retrieved": [],
+      "latency_ms": 0.2
+    },
+    {
+      "question": "¿Qué antibiótico tengo que tomar?",
+      "relevant": [],
+      "retrieved": [],
+      "latency_ms": 0.2
+    }
+  ],
+  "embedding": {
+    "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "max_seq_length": 128,
+    "dimension": 384,
+    "chunks": 214,
+    "window_tokens": 96,
+    "stride_tokens": 64,
+    "aggregation": "maximum child-window cosine per parent article"
+  },
+  "challenge": {
+    "backend": "bm25+neural:sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "corpus_sha256": "a6d27255d3adda9c7c2d72ad6574f005a579cabeb4cd6aa459bb62492fd03533",
+    "cases": 30,
+    "hit_at_5": 0.92,
+    "mrr_at_5": 0.7447,
+    "out_of_scope_abstention": 1.0,
+    "results": [
+      {
+        "question": "Mi lavarropas nuevo dejó de andar. El comercio dice que no existe garantía si no pagué una extensión.",
+        "relevant": [
+          "11"
+        ],
+        "retrieved": [
+          "11",
+          "18",
+          "16",
+          "17",
+          "14"
+        ],
+        "latency_ms": 41.1
+      },
+      {
+        "question": "Mi celular estuvo veinte días en el taller por la garantía. ¿Ese tiempo cuenta en el plazo?",
+        "relevant": [
+          "16"
+        ],
+        "retrieved": [
+          "16",
+          "11",
+          "30",
+          "18",
+          "30 bis"
+        ],
+        "latency_ms": 33.2
+      },
+      {
+        "question": "Me devolvieron la heladera del arreglo pero sigue fallando. ¿Qué establece la ley?",
+        "relevant": [
+          "17"
+        ],
+        "retrieved": [
+          "11",
+          "15",
+          "17",
+          "50",
+          "16"
+        ],
+        "latency_ms": 48.9
+      },
+      {
+        "question": "¿El fabricante tiene que garantizar repuestos y servicio técnico?",
+        "relevant": [
+          "12"
+        ],
+        "retrieved": [
+          "12",
+          "10 ter",
+          "14",
+          "10 quáter",
+          "40"
+        ],
+        "latency_ms": 29.8
+      },
+      {
+        "question": "El vendedor quiere que reclame solamente al importador por la garantía.",
+        "relevant": [
+          "13"
+        ],
+        "retrieved": [
+          "10",
+          "14",
+          "11",
+          "16",
+          "34"
+        ],
+        "latency_ms": 29.0
+      },
+      {
+        "question": "¿Qué datos debe incluir el certificado de garantía?",
+        "relevant": [
+          "14"
+        ],
+        "retrieved": [
+          "10",
+          "14",
+          "11",
+          "24",
+          "16"
+        ],
+        "latency_ms": 31.1
+      },
+      {
+        "question": "¿Deben darme constancia de la reparación de un producto en garantía?",
+        "relevant": [
+          "15"
+        ],
+        "retrieved": [
+          "15",
+          "17",
+          "16",
+          "11",
+          "14"
+        ],
+        "latency_ms": 47.4
+      },
+      {
+        "question": "El comercio publicó una oferta con fecha de vigencia y luego se negó a vender.",
+        "relevant": [
+          "7"
+        ],
+        "retrieved": [
+          "7",
+          "8",
+          "35",
+          "31",
+          "4"
+        ],
+        "latency_ms": 32.6
+      },
+      {
+        "question": "La publicidad prometía una función que no está incluida en mi contrato.",
+        "relevant": [
+          "8"
+        ],
+        "retrieved": [
+          "8",
+          "38",
+          "2",
+          "7",
+          "34"
+        ],
+        "latency_ms": 31.0
+      },
+      {
+        "question": "Me ofrecieron un producto usado sin avisar que tenía defectos.",
+        "relevant": [
+          "9"
+        ],
+        "retrieved": [
+          "23",
+          "9",
+          "11",
+          "34",
+          "10 bis"
+        ],
+        "latency_ms": 31.6
+      },
+      {
+        "question": "El proveedor incumplió el contrato. ¿Qué alternativas ofrece la ley de consumo?",
+        "relevant": [
+          "10 bis"
+        ],
+        "retrieved": [
+          "3",
+          "36",
+          "32",
+          "10 bis",
+          "52 bis"
+        ],
+        "latency_ms": 16.7
+      },
+      {
+        "question": "Contraté una suscripción por internet y me exigen ir en persona para darla de baja.",
+        "relevant": [
+          "10 ter"
+        ],
+        "retrieved": [
+          "10 quáter",
+          "34",
+          "10 ter",
+          "2",
+          "7"
+        ],
+        "latency_ms": 48.5
+      },
+      {
+        "question": "Al pedir la baja de un servicio me quieren cobrar un mes adelantado.",
+        "relevant": [
+          "10 quáter"
+        ],
+        "retrieved": [
+          "10 ter",
+          "10 quáter",
+          "30",
+          "31",
+          "17"
+        ],
+        "latency_ms": 34.2
+      },
+      {
+        "question": "¿Se permite enviar al consumidor cosas no solicitadas y generar cargos automáticos?",
+        "relevant": [
+          "35"
+        ],
+        "retrieved": [
+          "22",
+          "10 ter",
+          "32",
+          "34",
+          "35"
+        ],
+        "latency_ms": 17.5
+      },
+      {
+        "question": "Compré por catálogo y quiero revocar la aceptación. ¿Cuándo empieza el plazo?",
+        "relevant": [
+          "34"
+        ],
+        "retrieved": [
+          "34",
+          "31",
+          "11",
+          "7",
+          "16"
+        ],
+        "latency_ms": 34.7
+      },
+      {
+        "question": "Un cobrador me envía mensajes con apariencia de notificación judicial para intimidarme.",
+        "relevant": [
+          "8 bis"
+        ],
+        "retrieved": [
+          "8 bis",
+          "45",
+          "26",
+          "14",
+          "40 bis"
+        ],
+        "latency_ms": 33.2
+      },
+      {
+        "question": "En un contrato de consumo me hacen renunciar a mis derechos.",
+        "relevant": [
+          "37"
+        ],
+        "retrieved": [
+          "37",
+          "36",
+          "10 bis",
+          "34",
+          "40 bis"
+        ],
+        "latency_ms": 15.1
+      },
+      {
+        "question": "¿Qué cláusulas invierten la carga de la prueba en perjuicio del consumidor?",
+        "relevant": [
+          "37"
+        ],
+        "retrieved": [
+          "37",
+          "36",
+          "52 bis",
+          "53",
+          "3"
+        ],
+        "latency_ms": 18.3
+      },
+      {
+        "question": "¿Quién responde cuando un producto con vicios causa daños al consumidor?",
+        "relevant": [
+          "40"
+        ],
+        "retrieved": [
+          "40",
+          "40 bis",
+          "52 bis",
+          "37",
+          "8 bis"
+        ],
+        "latency_ms": 32.9
+      },
+      {
+        "question": "¿Puede un juez aplicar una multa civil por incumplimiento de un proveedor?",
+        "relevant": [
+          "52 bis"
+        ],
+        "retrieved": [
+          "52 bis",
+          "8 bis",
+          "10 bis",
+          "47",
+          "51"
+        ],
+        "latency_ms": 19.7
+      },
+      {
+        "question": "¿La ley de defensa del consumidor es de orden público en todo el país?",
+        "relevant": [
+          "65"
+        ],
+        "retrieved": [
+          "52",
+          "3",
+          "1",
+          "4",
+          "25"
+        ],
+        "latency_ms": 17.8
+      },
+      {
+        "question": "¿La formación del consumidor incluye protección del medio ambiente?",
+        "relevant": [
+          "61"
+        ],
+        "retrieved": [
+          "61",
+          "43",
+          "5",
+          "56",
+          "1"
+        ],
+        "latency_ms": 15.2
+      },
+      {
+        "question": "¿Qué obligaciones tienen las asociaciones de consumidores para funcionar?",
+        "relevant": [
+          "56"
+        ],
+        "retrieved": [
+          "56",
+          "58",
+          "55",
+          "52",
+          "62"
+        ],
+        "latency_ms": 15.7
+      },
+      {
+        "question": "¿En cuántos años prescriben las sanciones emergentes de la ley?",
+        "relevant": [
+          "50"
+        ],
+        "retrieved": [
+          "50",
+          "47",
+          "49",
+          "46",
+          "7"
+        ],
+        "latency_ms": 16.6
+      },
+      {
+        "question": "¿Quién puede iniciar acciones judiciales de defensa del consumidor?",
+        "relevant": [
+          "52"
+        ],
+        "retrieved": [
+          "52",
+          "55",
+          "1",
+          "53",
+          "56"
+        ],
+        "latency_ms": 19.5
+      },
+      {
+        "question": "¿Cuánto es dos más dos?",
+        "relevant": [],
+        "retrieved": [],
+        "latency_ms": 0.2
+      },
+      {
+        "question": "Escribí un poema sobre la luna",
+        "relevant": [],
+        "retrieved": [],
+        "latency_ms": 0.2
+      },
+      {
+        "question": "¿Qué ejercicios hago para ganar masa muscular?",
+        "relevant": [],
+        "retrieved": [],
+        "latency_ms": 0.2
+      },
+      {
+        "question": "¿Qué medicamento sirve para la fiebre?",
+        "relevant": [],
+        "retrieved": [],
+        "latency_ms": 0.2
+      },
+      {
+        "question": "Explicame la teoría de la relatividad",
+        "relevant": [],
+        "retrieved": [],
+        "latency_ms": 0.2
+      }
+    ]
+  }
+}

@@ -8,6 +8,10 @@
 
 Proyecto de portfolio para mostrar decisiones de ingeniería de RAG: ingesta reproducible, recuperación evaluable, orquestación con herramientas, generación con evidencia y controles de seguridad. Interfaz y respuestas en español argentino; código en Python.
 
+![Interfaz de Consumidor RAG](docs/images/demo-desktop.png)
+
+**Validación real:** 24 tests Python, 12 tests de Chromium en escritorio/móvil, auditorías axe sin infracciones, encoder multilingüe ejecutado y pruebas con Ollama real. Ver [evidencia, resultados y límites](docs/validation.md).
+
 > Demo educativa, no asesoramiento jurídico. La Ley 24.240 es parte de un sistema normativo más amplio. El corpus no incluye jurisprudencia, códigos, reglamentación ni procedimientos provinciales. Verificá siempre la fuente oficial y su vigencia.
 
 ## Ejecutar en dos minutos
@@ -45,7 +49,7 @@ Invoke-RestMethod http://127.0.0.1:8000/api/ask -Method Post -ContentType 'appli
 | Recuperación híbrida | BM25 + TF-IDF de caracteres; opción BM25 + embeddings multilingües |
 | Ranking | Reciprocal Rank Fusion, búsqueda explícita por artículo y fusión de consultas |
 | Flujo agéntico | Planificador → herramienta de búsqueda → recuperación correctiva limitada → composición → validación |
-| Grounding | ID de evidencia existente y cita textual exacta; fallback extractivo ante error |
+| Grounding | Selección de IDs de pasajes permitidos; el servidor recupera la cita original |
 | Observabilidad | Pasos y consultas ejecutadas, IDs recuperados, modo, backend, latencia y versión del corpus |
 | Evaluación | Dataset versionado, Hit@5, MRR@5, abstención y tests automatizados |
 | Seguridad | Sin herramientas de ejecución, sin navegación libre, secretos por entorno, límites y salida DOM segura |
@@ -91,7 +95,7 @@ export EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-
 $env:EMBEDDING_MODEL='sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 ```
 
-Ejecutá el servidor con la misma variable. Este modo reemplaza TF-IDF por similitud coseno entre embeddings normalizados y conserva BM25 + RRF. La primera ejecución descarga el modelo; puede consumir varios cientos de MB. `trust_remote_code=False`. Revisá licencia y procedencia antes de cambiarlo. Los embeddings se generan en memoria al arrancar, sin base vectorial externa: para 75 bloques es una elección deliberada. Artículos largos pueden superar la ventana del encoder; BM25 sigue viendo el artículo completo. Para un corpus mayor conviene dividir por incisos y persistir el índice.
+Usá `uv run --extra semantic` para ejecutar el servidor con embeddings y conservar la dependencia opcional. Configurá también `EMBEDDING_REVISION=e8f8c211226b894fcb81acc59f3b34ba3efd5f42`, la revisión probada de este modelo. Se codifican **214 ventanas de 96 tokens con paso 64**, agregadas por máxima similitud al artículo padre: así no se trunca cada artículo a los 128 tokens del encoder. BM25 ve el texto completo. La primera ejecución descarga el modelo; `trust_remote_code=False`. Revisá licencia y procedencia antes de cambiarlo. El índice vive en memoria; para este corpus no hace falta una base vectorial externa.
 
 ### 3. Planificación y generación con LLM
 
@@ -107,7 +111,23 @@ uv run uvicorn consumidor.api:app --app-dir src --host 127.0.0.1 --port 8000
 
 En bash usá `export NOMBRE=valor`. `.env.example` es una referencia; **no se carga automáticamente**. Nunca pegues claves en archivos versionados. El frontend no recibe la clave. Este modo envía pregunta y evidencia al proveedor configurado y puede generar costos. No ingreses información personal.
 
-Si el plan es inválido, hay timeout o la cita no existe literalmente, se retorna evidencia extractiva con `fallback=true`. La validación comprueba **procedencia textual**, no que la explicación del modelo sea lógicamente implicada por la cita. Se requiere revisión humana. El modo LLM se prueba con dobles controlados; no se ha validado contra un proveedor pago en esta versión.
+El generador selecciona `quote_id` de un catálogo de pasajes y redacta una explicación. El servidor recupera el texto original por ese ID: el modelo no necesita copiar la cita. Un ID inventado, plan inválido o timeout produce evidencia extractiva con `fallback=true`. Se comprueba **procedencia textual**, no implicación lógica ni calidad jurídica. Se requiere revisión humana. El modo real fue probado con Ollama; no con un proveedor pago.
+
+### 4. Ollama local, sin clave paga
+
+Con Ollama abierto y `qwen3.5:2b` instalado:
+
+```powershell
+$env:GENERATION_BACKEND='llm'
+$env:LLM_BASE_URL='http://127.0.0.1:11434/v1'
+$env:LLM_ALLOW_LOCAL_HTTP='1'
+$env:LLM_MODEL='qwen3.5:2b'
+$env:LLM_API_KEY='ollama'
+$env:LLM_REASONING_EFFORT='none'
+uv run uvicorn consumidor.api:app --app-dir src --host 127.0.0.1 --port 8000
+```
+
+`ollama` es un valor de compatibilidad, no una credencial privada. HTTP requiere opt-in y solo se permite para las IP `127.0.0.1` y `::1`; los proveedores remotos requieren HTTPS. Para combinar con embeddings, conservá sus variables y agregá `--extra semantic` a `uv run`. Calentá el modelo antes de una demo: la carga inicial puede superar el timeout de 25 segundos y activar el fallback.
 
 ## Corpus y actualización
 
@@ -139,6 +159,9 @@ uv run ruff format --check src tests
 PYTHONPATH=src uv run python -m consumidor.evaluate --output evals/latest.json
 uv run bandit -r src -q
 uv run pip-audit
+npm ci
+npx playwright install chromium
+npm run test:e2e
 ```
 
 En PowerShell configurá `$env:PYTHONPATH='src'` antes del evaluador. La suite cubre integridad del corpus, búsqueda por artículo, grounding de citas, inyección básica, timeouts del proveedor, validación HTTP y rate limiting. Los fallos bloquean CI.
@@ -148,10 +171,10 @@ Baseline reproducible en [evals/baseline.json](evals/baseline.json):
 | Métrica | Resultado | Muestra |
 |---|---:|---:|
 | Hit@5 | 1,0000 | 15 consultas con artículo esperado |
-| MRR@5 | 0,7778 | Las mismas 15 consultas |
+| MRR@5 | 0,7889 | Las mismas 15 consultas |
 | Abstención fuera de alcance | 1,0000 | 3 consultas negativas |
 
-Dataset pequeño, escrito para este proyecto y usado durante desarrollo: **no es un conjunto de prueba independiente ni permite afirmar calidad jurídica o precisión de producción**. Hit@5 mide si aparece al menos un artículo anotado; no mide exhaustividad ni calidad de la explicación. Los resultados publicados corresponden al baseline léxico y extractivo; no al encoder ni a un LLM real. La latencia depende del hardware y excluye el arranque del índice.
+Hay además 30 casos de desafío y una comparación con el encoder real: [informe de validación](docs/validation.md). Ambos conjuntos son pequeños, escritos para este proyecto y usados durante desarrollo: **no son un test independiente ni permiten afirmar calidad jurídica de producción**. Hit@5 no mide exhaustividad ni corrección de las explicaciones. La latencia depende del hardware y excluye el arranque del índice.
 
 ## Seguridad y despliegue
 
@@ -182,7 +205,7 @@ data/             snapshot oficial normalizado y manifiesto
 evals/            dataset y baseline medido
 tests/            pruebas funcionales y de seguridad
 docs/             decisiones, limitaciones y roadmap
-.github/          CI, revisión de dependencias y plantillas
+.github/          CI y revisión de dependencias
 ```
 
 ## Licencia

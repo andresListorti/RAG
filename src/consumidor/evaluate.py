@@ -8,9 +8,9 @@ from .ingest import ROOT
 from .retrieval import Retriever
 
 
-def evaluate():
-    agent = Agent(Retriever())
-    cases = json.loads((ROOT / "evals/questions.json").read_text(encoding="utf-8"))
+def evaluate(cases_path=None, retriever=None):
+    agent = Agent(retriever or Retriever())
+    cases = json.loads((cases_path or ROOT / "evals/questions.json").read_text(encoding="utf-8"))
     rows = []
     reciprocal, hits, relevant_count, negatives, abstained = 0, 0, 0, 0, 0
     for case in cases:
@@ -42,8 +42,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--cases", type=Path)
     args = parser.parse_args()
-    result = evaluate()
+    result = evaluate(args.cases)
     encoded = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

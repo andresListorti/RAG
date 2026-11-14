@@ -17,8 +17,8 @@ jobs:
           python-version: '3.13'
       - run: python -m pip install uv==0.12.15
       - run: uv sync --frozen
-      - run: uv run ruff check src tests
-      - run: uv run ruff format --check src tests
+      - run: uv run ruff check src tests scripts
+      - run: uv run ruff format --check src tests scripts
       - run: uv run pytest -q
       - run: uv run python -m consumidor.evaluate --output evals/ci-result.json
         env:
@@ -36,3 +36,57 @@ jobs:
         with:
           persist-credentials: false
       - run: docker build -t consumidor-rag .
+      - name: Run unprivileged read-only container and exercise real API
+        run: |
+          docker run -d --name consumidor --read-only --tmpfs /tmp -p 127.0.0.1:8000:8000 consumidor-rag
+          test "$(docker exec consumidor id -u)" = "10001"
+          python scripts/smoke_http.py http://127.0.0.1:8000
+      - if: always()
+        run: docker logs consumidor && docker rm -f consumidor
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: python -m pip install uv==0.12.15
+      - run: uv sync --frozen
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-and-accessibility-report
+          path: playwright-report/
+  semantic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install uv==0.12.15
+      - run: uv sync --frozen --extra semantic
+      - name: Real multilingual encoder evaluation
+        run: uv run --frozen --extra semantic python scripts/validate_semantic.py
+        env:
+          PYTHONPATH: src
+          EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+          EMBEDDING_REVISION: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+          GENERATION_BACKEND: extractive
+      - run: uv run --frozen --extra semantic pip-audit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: neural-retrieval-report
+          path: evals/neural-validation.json

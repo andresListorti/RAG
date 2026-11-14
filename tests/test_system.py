@@ -3,7 +3,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from consumidor.agent import Agent, chat, validate_claims
+from consumidor.agent import Agent, chat, quote_catalog, resolve_claims, validate_claims
 from consumidor.api import app, recent
 from consumidor.ingest import DATA, parse_articles
 from consumidor.retrieval import Retriever
@@ -84,8 +84,7 @@ def test_llm_valid_plan_and_grounded_generation(retriever, monkeypatch):
             "claims": [
                 {
                     "statement": "Este pasaje permite revisar las garantías.",
-                    "evidence_id": doc["id"],
-                    "quote": doc["text"][:100],
+                    "quote_id": doc["passages"][0]["quote_id"],
                 }
             ]
         }
@@ -121,6 +120,49 @@ def test_warranty_without_legal_keyword(retriever, monkeypatch):
     monkeypatch.setenv("GENERATION_BACKEND", "extractive")
     result = Agent(retriever).run("Compré una heladera y dejó de funcionar. ¿Qué garantía tiene?")
     assert "11" in [d["article"] for d in result["evidence"]]
+
+
+def test_quote_ids_resolve_only_to_original_source_spans(retriever):
+    evidence = retriever.search("artículo 34")
+    catalog, documents = quote_catalog(evidence)
+    assert catalog and documents
+    quote_id = documents[0]["passages"][0]["quote_id"]
+    claims = resolve_claims([{"statement": "Fragmento de la ley", "quote_id": quote_id}], catalog)
+    assert validate_claims(claims, evidence)
+    with pytest.raises(ValueError, match="Unknown"):
+        resolve_claims([{"statement": "Inventado", "quote_id": "invented:q1"}], catalog)
+
+
+def test_http_loopback_requires_explicit_opt_in(monkeypatch):
+    monkeypatch.delenv("LLM_ALLOW_LOCAL_HTTP", raising=False)
+    monkeypatch.setenv("LLM_BASE_URL", "http://127.0.0.1:11434/v1")
+    with pytest.raises(ValueError, match="HTTPS"):
+        chat("test", {})
+    monkeypatch.setenv("LLM_ALLOW_LOCAL_HTTP", "1")
+    monkeypatch.setenv("LLM_BASE_URL", "http://127.0.0.1.evil.example/v1")
+    with pytest.raises(ValueError, match="HTTPS"):
+        chat("test", {})
+
+
+def test_nonexistent_article_abstains_without_calling_model(retriever, monkeypatch):
+    monkeypatch.setenv("GENERATION_BACKEND", "llm")
+
+    def forbidden(*_):
+        pytest.fail("Missing articles must be rejected before calling a model")
+
+    result = Agent(retriever, llm=forbidden).run("¿Qué dice el artículo 999 de defensa del consumidor?")
+    assert not result["claims"]
+    assert result["trace"][0]["status"] == "article_not_found"
+    assert retriever.search("artículo 999") == []
+
+
+def test_challenge_retrieval_regression(retriever, monkeypatch):
+    from consumidor.evaluate import evaluate
+
+    monkeypatch.setenv("GENERATION_BACKEND", "extractive")
+    result = evaluate(DATA.parent / "evals/challenge.json", retriever=retriever)
+    assert result["hit_at_5"] >= 0.9
+    assert result["out_of_scope_abstention"] == 1
 
 
 def test_llm_invented_quote_falls_back(retriever, monkeypatch):

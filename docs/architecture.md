@@ -2,7 +2,7 @@
 
 ## Corpus pequeño y verificable
 
-La primera versión cubre una sola ley. Esto permite revisar los bloques y reproducir evaluaciones. Se indexa cada artículo completo para preservar excepciones y notas. El costo es que artículos largos pueden diluir ranking y exceder la ventana del encoder opcional. La siguiente iteración debería usar subchunks por inciso con recuperación del artículo padre.
+La primera versión cubre una sola ley. Se conserva cada artículo completo para evidencia y BM25. El encoder opcional usa ventanas solapadas de 96 tokens, paso 64, con máxima similitud por artículo padre. Esto evita truncar artículos al límite de 128 tokens del modelo probado. Los incisos y las notas se conservan en la evidencia visible; una futura comparación puede evaluar segmentación estructural frente a ventanas de tokens.
 
 ## Recuperación sin infraestructura externa
 
@@ -16,7 +16,7 @@ Se elige una implementación pequeña frente a LangGraph/LangChain para mostrar 
 
 ## Integridad de citas y límites de grounding
 
-Cada claim generado debe referenciar un documento recuperado y contener una cita continua que exista en él. Si no pasa, toda la respuesta vuelve a extractiva. Esto previene citas fabricadas, pero NO prueba que la afirmación se deduzca de la cita. Una evaluación de entailment y revisión humana son futuras capas necesarias.
+El generador selecciona un ID de un catálogo de pasajes creado por el servidor. Solo IDs permitidos se resuelven a texto original y documento recuperado; luego se verifica la cita exacta. Si falla, toda la respuesta vuelve a extractiva. Esta decisión surgió de probar un LLM real que modificaba citas al copiarlas. Evita citas fabricadas, pero NO prueba que la explicación se deduzca de ellas. Una evaluación de entailment y revisión humana siguen siendo necesarias.
 
 El truncado de contexto LLM a 12.000 caracteres por artículo y de fragmentos extractivos a 1.600 caracteres se hace explícito. La interfaz permite abrir el artículo completo. Nunca se promete que un fragmento incluya todas las excepciones.
 

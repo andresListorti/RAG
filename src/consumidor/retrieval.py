@@ -27,6 +27,11 @@ def tokens(text):
     return [w for w in re.findall(r"[a-z0-9]+", normalize(text)) if w not in STOP and len(w) > 1]
 
 
+def requested_article(query):
+    match = re.search(r"art(?:iculo|\.)?\s*(\d+)(?:\s+(bis|ter|quater))?", normalize(query))
+    return match[1] + (" " + match[2] if match[2] else "") if match else None
+
+
 class Retriever:
     def __init__(self, embedding_model=None):
         corpus = (DATA / "articles.jsonl").read_bytes()
@@ -44,15 +49,42 @@ class Retriever:
         if model:
             from sentence_transformers import SentenceTransformer
 
-            self.encoder = SentenceTransformer(model, trust_remote_code=False)
-            self.matrix = self.encoder.encode([d["text"] for d in self.docs], normalize_embeddings=True)
+            revision = os.getenv("EMBEDDING_REVISION")
+            self.encoder = SentenceTransformer(model, revision=revision, trust_remote_code=False)
+            # Encode overlapping windows, so long articles are not silently truncated.
+            window = min(96, self.encoder.max_seq_length - 2)
+            stride = max(1, window * 2 // 3)
+            chunks, parents = [], []
+            for parent, doc in enumerate(self.docs):
+                ids = self.encoder.tokenizer.encode(doc["text"], add_special_tokens=False, verbose=False)
+                for offset in range(0, len(ids), stride):
+                    chunks.append(self.encoder.tokenizer.decode(ids[offset : offset + window]))
+                    parents.append(parent)
+                    if offset + window >= len(ids):
+                        break
+            self.parents = np.array(parents)
+            self.matrix = self.encoder.encode(chunks, normalize_embeddings=True)
             self.backend = f"bm25+neural:{model}"
+            self.embedding_metadata = {
+                "model": model,
+                "requested_revision": revision,
+                "max_seq_length": self.encoder.max_seq_length,
+                "dimension": self.matrix.shape[1],
+                "chunks": len(chunks),
+                "window_tokens": window,
+                "stride_tokens": stride,
+                "aggregation": "maximum child-window cosine per parent article",
+            }
         else:
             self.vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), strip_accents="unicode")
             self.matrix = self.vectorizer.fit_transform(d["text"] for d in self.docs)
             self.backend = "bm25+char-tfidf (lexical, no neural embeddings)"
 
     def search(self, query, k=5):
+        label = requested_article(query)
+        exact = next((i for i, d in enumerate(self.docs) if normalize(d["article"]) == label), None)
+        if label and exact is None:
+            return []
         words = tokens(query)
         lexical = np.zeros(len(self.docs))
         for word in set(words):
@@ -61,7 +93,9 @@ class Retriever:
                 self.idf.get(word, 0) * tf * 2.5 / (tf + 1.5 * (0.25 + 0.75 * self.lengths / self.avg_length))
             )
         if self.encoder:
-            dense = self.matrix @ self.encoder.encode(query, normalize_embeddings=True)
+            chunk_scores = self.matrix @ self.encoder.encode(query, normalize_embeddings=True)
+            dense = np.full(len(self.docs), -1.0)
+            np.maximum.at(dense, self.parents, chunk_scores)
         else:
             dense = (self.matrix @ self.vectorizer.transform([query]).T).toarray().ravel()
         # Require lexical support; avoids presenting unrelated nearest neighbours as evidence.
@@ -73,12 +107,8 @@ class Retriever:
             for rank, idx in enumerate(np.argsort(-scores)[:20]):
                 if idx in eligible:
                     fused[idx] += 1 / (60 + rank + 1)
-        explicit = re.search(r"art(?:iculo|\.)?\s*(\d+)(?:\s+(bis|ter|quater))?", normalize(query))
-        if explicit:
-            label = explicit[1] + (" " + explicit[2] if explicit[2] else "")
-            exact = next((i for i, d in enumerate(self.docs) if normalize(d["article"]) == label), None)
-            if exact is not None:
-                fused[exact] += 1
+        if exact is not None:
+            fused[exact] += 1
         return [
             {**self.docs[i], "score": round(float(fused[i]), 6)}
             for i in np.argsort(-fused)[:k]
