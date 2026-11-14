@@ -16,7 +16,7 @@ from .retrieval import normalize, tokens
 TOPICS = {
     "garantia": (
         "garantia defecto roto falla reparacion arreglo celular heladera",
-        "garantía legal servicio técnico reparación responsabilidad solidaria",
+        "garantía legal bienes muebles usados nuevos meses defectos",
     ),
     "distancia": (
         "internet online arrepentimiento devolver devolucion distancia",

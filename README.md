@@ -1,5 +1,9 @@
 # Consumidor RAG · Argentina
 
+[English documentation](README.en.md) · Español
+
+[![Tests and security](https://github.com/andresListorti/RAG/actions/workflows/ci.yml/badge.svg)](https://github.com/andresListorti/RAG/actions/workflows/ci.yml)
+
 **Búsqueda auditable sobre la Ley 24.240, con citas textuales, recuperación híbrida y un flujo agéntico acotado.**
 
 Proyecto de portfolio para mostrar decisiones de ingeniería de RAG: ingesta reproducible, recuperación evaluable, orquestación con herramientas, generación con evidencia y controles de seguridad. Interfaz y respuestas en español argentino; código en Python.
@@ -144,7 +148,7 @@ Baseline reproducible en [evals/baseline.json](evals/baseline.json):
 | Métrica | Resultado | Muestra |
 |---|---:|---:|
 | Hit@5 | 1,0000 | 15 consultas con artículo esperado |
-| MRR@5 | 0,7222 | Las mismas 15 consultas |
+| MRR@5 | 0,7778 | Las mismas 15 consultas |
 | Abstención fuera de alcance | 1,0000 | 3 consultas negativas |
 
 Dataset pequeño, escrito para este proyecto y usado durante desarrollo: **no es un conjunto de prueba independiente ni permite afirmar calidad jurídica o precisión de producción**. Hit@5 mide si aparece al menos un artículo anotado; no mide exhaustividad ni calidad de la explicación. Los resultados publicados corresponden al baseline léxico y extractivo; no al encoder ni a un LLM real. La latencia depende del hardware y excluye el arranque del índice.

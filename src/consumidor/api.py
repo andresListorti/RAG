@@ -42,9 +42,9 @@ async def protect(request: Request, call_next):
     if request.method == "POST":
         body = bytearray()
         async for chunk in request.stream():
-            body.extend(chunk)
-            if len(body) > 8192:
+            if len(body) + len(chunk) > 8192:
                 return JSONResponse({"detail": "Request too large"}, status_code=413)
+            body.extend(chunk)
         request._body = bytes(body)
     response = await call_next(request)
     response.headers.update(

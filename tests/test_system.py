@@ -3,7 +3,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from consumidor.agent import Agent, validate_claims
+from consumidor.agent import Agent, chat, validate_claims
 from consumidor.api import app, recent
 from consumidor.ingest import DATA, parse_articles
 from consumidor.retrieval import Retriever
@@ -69,6 +69,58 @@ def test_forged_citations_fail():
         docs,
     )
     assert not validate_claims(None, docs)
+
+
+def test_llm_valid_plan_and_grounded_generation(retriever, monkeypatch):
+    monkeypatch.setenv("GENERATION_BACKEND", "llm")
+    calls = []
+
+    def grounded(system, payload):
+        calls.append(payload)
+        if "documents" not in payload:
+            return {"queries": ["artículo 11 garantías"]}
+        doc = payload["documents"][0]
+        return {
+            "claims": [
+                {
+                    "statement": "Este pasaje permite revisar las garantías.",
+                    "evidence_id": doc["id"],
+                    "quote": doc["text"][:100],
+                }
+            ]
+        }
+
+    result = Agent(retriever, llm=grounded).run("¿Qué garantía tiene un producto nuevo?")
+    assert len(calls) == 2
+    assert len(calls[1]["documents"]) <= 5
+    assert not result["fallback"]
+    assert result["trace"][-1]["method"] == "llm"
+    assert validate_claims(result["claims"], result["evidence"])
+
+
+def test_corrupt_snapshot_fails_closed(tmp_path, monkeypatch):
+    import consumidor.retrieval as retrieval
+
+    (tmp_path / "articles.jsonl").write_bytes(b"tampered")
+    (tmp_path / "manifest.json").write_text('{"corpus_sha256":"incorrect"}')
+    monkeypatch.setattr(retrieval, "DATA", tmp_path)
+    with pytest.raises(ValueError, match="integrity"):
+        retrieval.Retriever()
+
+
+@pytest.mark.parametrize(
+    "endpoint", ["http://localhost:9999", "file:///etc/passwd", "https://user:pass@example.com"]
+)
+def test_provider_rejects_unsafe_endpoint(endpoint, monkeypatch):
+    monkeypatch.setenv("LLM_BASE_URL", endpoint)
+    with pytest.raises(ValueError, match="HTTPS"):
+        chat("test", {})
+
+
+def test_warranty_without_legal_keyword(retriever, monkeypatch):
+    monkeypatch.setenv("GENERATION_BACKEND", "extractive")
+    result = Agent(retriever).run("Compré una heladera y dejó de funcionar. ¿Qué garantía tiene?")
+    assert "11" in [d["article"] for d in result["evidence"]]
 
 
 def test_llm_invented_quote_falls_back(retriever, monkeypatch):
