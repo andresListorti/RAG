@@ -1,0 +1,20 @@
+[
+  {"question":"¿Qué garantía legal tiene un producto nuevo?","relevant":["11"]},
+  {"question":"¿Qué garantía tienen los bienes muebles usados?","relevant":["11"]},
+  {"question":"¿Quién debe pagar el flete para llevar un producto al taller durante la garantía?","relevant":["11"]},
+  {"question":"Compré por internet. ¿Puedo revocar la aceptación?","relevant":["34"]},
+  {"question":"¿Qué obligaciones hay sobre información gratuita al consumidor?","relevant":["4"]},
+  {"question":"¿La publicidad se incluye en el contrato?","relevant":["8"]},
+  {"question":"¿Cómo se puede dar de baja un servicio contratado por teléfono?","relevant":["10 ter"]},
+  {"question":"¿Pueden cobrar preaviso al solicitar la baja de un servicio?","relevant":["10 quáter"]},
+  {"question":"¿Qué dice la ley sobre trato digno y prácticas abusivas?","relevant":["8 bis"]},
+  {"question":"¿Qué sucede cuando una reparación no resulta satisfactoria?","relevant":["17"]},
+  {"question":"¿Qué dice el artículo 52 bis sobre daño punitivo?","relevant":["52 bis"]},
+  {"question":"¿Qué establece el artículo 37 sobre cláusulas abusivas?","relevant":["37"]},
+  {"question":"¿Quiénes responden solidariamente por la garantía legal?","relevant":["13"]},
+  {"question":"¿Cuándo prescriben las sanciones de esta ley?","relevant":["50"]},
+  {"question":"¿Qué opciones hay ante el incumplimiento de una oferta?","relevant":["10 bis"]},
+  {"question":"¿Cómo calculo la órbita de Marte?","relevant":[]},
+  {"question":"Escribí una receta de pizza","relevant":[]},
+  {"question":"¿Qué antibiótico tengo que tomar?","relevant":[]}
+]
