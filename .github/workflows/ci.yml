@@ -25,7 +25,7 @@ jobs:
           PYTHONPATH: src
       - run: uv run bandit -r src -q
       - run: uv run pip-audit
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: retrieval-evaluation
           path: evals/ci-result.json
@@ -62,7 +62,7 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: browser-and-accessibility-report
@@ -86,7 +86,7 @@ jobs:
           EMBEDDING_REVISION: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
           GENERATION_BACKEND: extractive
       - run: uv run --frozen --extra semantic pip-audit
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: neural-retrieval-report
           path: evals/neural-validation.json
